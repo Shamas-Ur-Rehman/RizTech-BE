@@ -1,18 +1,14 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type Role struct {
-	ID          uint         `json:"id" gorm:"primaryKey"`
-	Name        string       `json:"name" binding:"required" gorm:"unique"`
-	BusinessId  uint         `json:"business_id"`
-	BranchId    uint         `json:"branch_id"`
-	CreatedAt   time.Time    `json:"created_at"`
-	UpdatedAt   time.Time    `json:"updated_at"`
-	DeletedAt   *time.Time   `json:"deleted_at,omitempty" gorm:"index"`
-	Permissions []Permission `gorm:"foreignKey:RoleID"`
-}
-
-func (Role) TableName() string {
-	return "inpatient_roles"
+	ID        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name      string             `bson:"name" json:"name" binding:"required"`
+	CreatedAt time.Time          `bson:"created_at" json:"created_at"`
+	UpdatedAt time.Time          `bson:"updated_at" json:"updated_at"`
 }
