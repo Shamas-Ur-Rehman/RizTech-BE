@@ -16,35 +16,28 @@ func InitializeServer() *gin.Engine {
 	r.SetTrustedProxies(nil)
 	r.Use(middleware.RecoveryMiddleware())
 	r.Use(middleware.RequestIDMiddleware())
-	// r.Use(middleware.RequestLoggerMiddleware())
 	r.Use(middleware.SecurityHeadersMiddleware())
 	r.Use(middleware.TimeoutMiddleware(30 * time.Second))
 
 	allowedOrigins := os.Getenv("ALLOWED_ORIGINS")
 	var origins []string
-
 	if allowedOrigins != "" {
-		origins = strings.Split(allowedOrigins, ",")
-		for i, origin := range origins {
-			origins[i] = strings.TrimSpace(origin)
+		for _, o := range strings.Split(allowedOrigins, ",") {
+			origins = append(origins, strings.TrimSpace(o))
 		}
 	} else {
 		origins = []string{"*"}
 	}
 
-	config := cors.Config{
+	corsConfig := cors.Config{
 		AllowOrigins:     origins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"*"},
-		ExposeHeaders:    []string{"Content-Length", "X-Request-ID", "X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset"},
-		AllowCredentials: false,
+		ExposeHeaders:    []string{"Content-Length", "X-Request-ID"},
+		AllowCredentials: allowedOrigins != "" && allowedOrigins != "*",
 		MaxAge:           12 * 3600,
 	}
-	if allowedOrigins != "" && allowedOrigins != "*" {
-		config.AllowCredentials = true
-	}
-
-	r.Use(cors.New(config))
+	r.Use(cors.New(corsConfig))
 
 	return r
 }
